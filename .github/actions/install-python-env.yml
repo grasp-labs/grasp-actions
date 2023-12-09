@@ -26,15 +26,12 @@ runs:
         python-version: ${{ inputs.python-version }}
 
     - name: Configure AWS credentials
+      if: (inputs.aws-access-key-id != '' && inputs.aws-secret-access-key != '')
       uses: aws-actions/configure-aws-credentials@v1
       with:
-        aws-region: eu-north-1
-        # Actions cannot access secrets so pass them in as inputs
-        if: inputs.aws-access-key-id != ''
         aws-access-key-id: ${{ inputs.aws-access-key-id }}
-        # Only pass the AWS Secret Access Key if it was provided
-        if: inputs.aws-secret-access-key != ''
         aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
+        aws-region: eu-north-1
 
     - name: Install pipenv
       shell: bash
