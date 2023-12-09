@@ -1,0 +1,40 @@
+name: Lambda Deployment Shared Actions
+description: Shared actions for lambda deployment
+
+inputs:
+   aws-access-key-id:
+     required: true
+     description: "The aws-access-key-id used to authenticate with AWS"
+   aws-secret-access-key:
+     required: true
+     description: "The aws-secret-access-key used to authenticate with AWS"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - uses: actions/setup-node@v1
+      with:
+        node-version: '14.x'
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        # Actions cannot access secrets so pass them in as inputs
+        aws-access-key-id: ${{ inputs.aws-access-key-id }}
+        aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
+        aws-region: eu-north-1
+
+    - name: Install Serverless Framework
+      shell: bash
+      run: npm install -g serverless
+
+    - name: Serverless AWS authentication
+      shell: bash
+      run: sls config credentials --provider aws --key ${{ inputs.aws-access-key-id }} --secret ${{ inputs.aws-secret-access-key }}
+
+    - name: Install NPM dependencies
+      shell: bash
+      run: npm install serverless-deployment-bucket serverless-plugin-aws-alerts serverless-python-requirements serverless-step-functions
