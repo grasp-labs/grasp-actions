@@ -1,0 +1,47 @@
+name: Install Python Environment
+
+inputs:
+  python-version:
+    description: 'Python versions to use'
+    required: false
+    default: '3.8'
+  aws-access-key-id:
+    required: false
+    description: "The aws-access-key-id used to authenticate with AWS"
+  aws-secret-access-key:
+    required: false
+    description: "The aws-secret-access-key used to authenticate with AWS"
+
+description: "Shared Python Environment."
+runs:
+  using: "composite"
+
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python ${{ inputs.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-region: eu-north-1
+        # Actions cannot access secrets so pass them in as inputs
+        if: inputs.aws-access-key-id != ''
+        aws-access-key-id: ${{ inputs.aws-access-key-id }}
+        # Only pass the AWS Secret Access Key if it was provided
+        if: inputs.aws-secret-access-key != ''
+        aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
+
+    - name: Install pipenv
+      shell: bash
+      run: |
+        python -m pip install pipenv==2023.7.3 wheel==0.40.0
+
+    - name: Update pip
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
